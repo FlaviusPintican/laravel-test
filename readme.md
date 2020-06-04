@@ -55,8 +55,3 @@ comments
 user has an unique email and autoincremented id
 post has a body text because body should contain large text
 comment has a body text because body should contain large text
-
-As a php developer I decided to have a clean code and implement oop principle on this project
-I know can be a better version in the future. Now this version is a poc
-
-I would be very exciting if I have the posibility to have the tehnical interview to discuss on details
