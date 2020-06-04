@@ -7,14 +7,12 @@ use Illuminate\Support\Facades\Http;
 
 class PostService implements PostServiceInterface
 {
-    use ClientDomain;
-
     /**
      * {@inheritDoc}
      */
     public function getPosts(): array
     {
-        return $this->mapPosts(Http::get(self::$baseUrl . '/posts')->json());
+        return $this->mapPosts(Http::get(config('BASE_URL')  . '/posts')->json());
     }
 
     /**

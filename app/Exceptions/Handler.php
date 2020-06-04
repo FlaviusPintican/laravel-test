@@ -43,7 +43,7 @@ class Handler extends ExceptionHandler
     private function renderHttpExceptions(Throwable $exception): JsonResponse
     {
         $response = [
-            'error' => 'Sorry, can not execute your request.'
+            'code' => 'HTTP_BAD_REQUEST'
         ];
 
         $status = method_exists($exception, 'getStatusCode') ?
@@ -57,12 +57,12 @@ class Handler extends ExceptionHandler
 
         if ($exception instanceof AuthenticationException) {
             $status = Response::HTTP_UNAUTHORIZED;
-            $response['error'] = 'Can not finish authentication!';
+            $response['code'] = 'HTTP_UNAUTHORIZED';
         }
 
         if ($exception instanceof PDOException) {
             $status = Response::HTTP_INTERNAL_SERVER_ERROR;
-            $response['error'] = 'Can not finish your request!';
+            $response['code'] = 'HTTP_INTERNAL_SERVER_ERROR';
         }
 
         return response()->json($response, $status);

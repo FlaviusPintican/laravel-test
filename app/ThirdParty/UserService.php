@@ -7,14 +7,12 @@ use Illuminate\Support\Facades\Http;
 
 class UserService implements UserServiceInterface
 {
-    use ClientDomain;
-
     /**
      * {@inheritDoc}
      */
     public function getUsers(): array
     {
-        return $this->mapUsers(Http::get(self::$baseUrl . '/users')->json());
+        return $this->mapUsers(Http::get(config('BASE_URL') . '/users')->json());
     }
 
     /**

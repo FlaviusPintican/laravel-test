@@ -7,14 +7,12 @@ use Illuminate\Support\Facades\Http;
 
 class CommentService implements CommentServiceInterface
 {
-    use ClientDomain;
-
     /**
      * {@inheritDoc}
      */
     public function getComments(): array
     {
-        return $this->mapComments(Http::get(self::$baseUrl . '/comments')->json());
+        return $this->mapComments(Http::get(config('BASE_URL') . '/comments')->json());
     }
 
     /**

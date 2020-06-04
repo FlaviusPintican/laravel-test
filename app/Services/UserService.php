@@ -53,7 +53,7 @@ class UserService implements UserServiceInterface
      */
     public function getUserPosts(int $userId): array
     {
-        return Cache::remember("users-$userId", self::EXPIRE_TIME, function () use ($userId): array {
+        return Cache::remember("users-$userId" . uniqid(), self::EXPIRE_TIME, function () use ($userId): array {
             return $this->userRepository->getUserPosts($userId);
         });
     }
@@ -63,7 +63,7 @@ class UserService implements UserServiceInterface
      */
     public function getUsersPosts(): array
     {
-        return Cache::remember("users-1-10", self::EXPIRE_TIME, function () : array {
+        return Cache::remember('users' . uniqid(), self::EXPIRE_TIME, function () : array {
             $users = $this->userRepository->getUsersByLimit(0, 10);
             $posts = [];
 
