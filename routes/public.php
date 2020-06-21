@@ -2,4 +2,5 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', 'UserController@helloWorld');
+Route::post('/users', 'UserController@addUser');
+Route::post('/login', 'UserController@login');
