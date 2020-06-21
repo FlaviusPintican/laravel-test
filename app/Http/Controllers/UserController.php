@@ -33,7 +33,7 @@ class UserController extends Controller
      * @return User[]
      */
     public function getUsers(Request $request): array
-    {   var_dump($request->user());die;
+    {
         return $this->userService->getUsers($request->query('searchValue', ''));
     }
 
