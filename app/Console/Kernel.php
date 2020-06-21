@@ -2,9 +2,6 @@
 
 namespace App\Console;
 
-use App\Commands\ImportComments;
-use App\Commands\ImportPosts;
-use App\Commands\ImportUsers;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -16,9 +13,6 @@ class Kernel extends ConsoleKernel
      * @var string[]
      */
     protected $commands = [
-        ImportUsers::class,
-        ImportPosts::class,
-        ImportComments::class,
     ];
 
     /**
@@ -30,17 +24,6 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('app:import-users')
-            ->everyTenMinutes()
-            ->appendOutputTo('/storage/logs/import-users.log');
-
-        $schedule->command('app:import-posts')
-                 ->everyTenMinutes()
-                 ->appendOutputTo('/storage/logs/import-posts.log');
-
-        $schedule->command('app:import-comments')
-                 ->everyTenMinutes()
-                 ->appendOutputTo('/storage/logs/import-comments.log');
     }
 
     /**
@@ -50,6 +33,5 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
     }
 }
