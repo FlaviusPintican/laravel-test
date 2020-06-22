@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', 'UserController@login');
+Route::post('/login', 'UserController@login')->name('login');

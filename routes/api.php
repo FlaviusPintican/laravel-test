@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::group(['middleware' => 'api'], function() {
+Route::group(['middleware' => 'auth:api'], function() {
     Route::post('/users', 'UserController@addUser');
     Route::get('/users', 'UserController@getUsers');
     Route::get('/users/{user_id}', 'UserController@getUser');
@@ -12,6 +12,5 @@ Route::group(['middleware' => 'api'], function() {
     Route::get('/images/random', 'ImageController@getRandomImage');
     Route::put('/images/{image_id}', 'ImageController@editImage');
     Route::get('/images/{image_id}', 'ImageController@getImage');
-
     Route::post('/logout', 'UserController@logout');
 });

@@ -7,16 +7,12 @@ use App\Models\Image;
 use App\Models\User;
 use App\Repository\CommentRepository;
 use App\Repository\UserRepository;
-use http\Env\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use SebastianBergmann\CodeCoverage\TestFixture\C;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class UserService implements UserServiceInterface
 {
-    use Login;
-
     /**
      * @var UserRepository $userRepository
      */
@@ -54,8 +50,6 @@ class UserService implements UserServiceInterface
      */
     public function addUser(array $fields): User
     {
-        $this->check();
-
         return $this->userRepository->addUser(array_merge($fields, ['password' => Hash::make($fields['password'])]));
     }
 
@@ -64,8 +58,6 @@ class UserService implements UserServiceInterface
      */
     public function editUser(array $fields, int $id): User
     {
-        $this->check();
-
         $user = $this->getUser($id);
 
         $user->update($fields);
@@ -78,8 +70,6 @@ class UserService implements UserServiceInterface
      */
     public function deleteUser(int $id): bool
     {
-        $this->check();
-
         return $this->getUser($id)->delete();
     }
 
@@ -88,8 +78,6 @@ class UserService implements UserServiceInterface
      */
     public function addComment(array $fields): Comment
     {
-        $this->check();
-
         if (Image::find($fields['image_id'])) {
             throw new NotFoundHttpException('Image not found');
         }
@@ -114,5 +102,17 @@ class UserService implements UserServiceInterface
         }
 
         return $user;
+    }
+
+    /**
+     * @return void
+     */
+    public function logout(): void
+    {
+        $tokens = Auth::user()->tokens;
+
+        foreach($tokens as $token) {
+            $token->revoke();
+        }
     }
 }

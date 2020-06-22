@@ -123,7 +123,7 @@ class UserController extends Controller
      */
     public function logout(): JsonResponse
     {
-        Auth::logout();
+        $this->userService->logout();
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }
