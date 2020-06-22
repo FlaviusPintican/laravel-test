@@ -23,4 +23,14 @@ class ImageRepository
     {
         return Image::find($id);
     }
+
+    /**
+     * @param array $fields
+     *
+     * @return Image
+     */
+    public function addImage(array $fields): Image
+    {
+        return Image::create($fields);
+    }
 }

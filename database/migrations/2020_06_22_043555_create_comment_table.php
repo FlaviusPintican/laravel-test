@@ -18,7 +18,6 @@ class CreateCommentTable extends Migration
             $table->unsignedBigInteger('user_id')->index();
             $table->unsignedBigInteger('image_id')->index();
             $table->text('body');
-            $table->timestamps();
             $table->foreign('user_id')
                   ->references('id')
                   ->on('user')

@@ -12,5 +12,6 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::get('/images/random', 'ImageController@getRandomImage');
     Route::put('/images/{image_id}', 'ImageController@editImage');
     Route::get('/images/{image_id}', 'ImageController@getImage');
+    Route::post('/images', 'ImageController@addImage');
     Route::post('/logout', 'UserController@logout');
 });

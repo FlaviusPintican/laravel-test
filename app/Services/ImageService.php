@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use DateTime;
 use App\Models\Image;
 use App\Repository\ImageRepository;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ImageService
+class ImageService implements ImageServiceInterface
 {
     /**
      * @var ImageRepository $imageRepository
@@ -22,7 +25,7 @@ class ImageService
     }
 
     /**
-     * @return Image
+     * {@inheritDoc}
      */
     public function getRandomImage(): Image
     {
@@ -36,10 +39,7 @@ class ImageService
     }
 
     /**
-     * @param string $title
-     * @param int    $id
-     *
-     * @return Image
+     * {@inheritDoc}
      */
     public function editImage(string $title, int $id): Image
     {
@@ -50,9 +50,7 @@ class ImageService
     }
 
     /**
-     * @param int $id
-     *
-     * @return Image
+     * {@inheritDoc}
      */
     public function getImage(int $id): Image
     {
@@ -63,5 +61,24 @@ class ImageService
         }
 
         return $image;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addImage(Request $request): Image
+    {
+        $image = $request->file('image');
+        $userId = $request->user()->id;
+        $fileName = time() . '.' . $image->getClientOriginalName();
+        Storage::disk('local')
+               ->put("images/$userId/" . $fileName, file_get_contents($image->getRealPath()), 'public');
+
+        return $this->imageRepository->addImage([
+            'title' => $request->get('title'),
+            'image' => $fileName,
+            'user_id' => $userId,
+            'date' => new DateTime(),
+        ]);
     }
 }

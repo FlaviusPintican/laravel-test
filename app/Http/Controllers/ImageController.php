@@ -33,7 +33,7 @@ class ImageController extends Controller
 
     /**
      * @param Request $request
-     * @param int     $id
+     * @param int $id
      *
      * @return JsonResponse
      */
@@ -52,5 +52,18 @@ class ImageController extends Controller
     public function getImage(int $id): Image
     {
         return $this->imageService->getImage($id)->load('comments');
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function addImage(Request $request): JsonResponse
+    {
+        return $this->errors($request, [
+                'title' => 'required|string|min:5',
+                'image' => 'required'
+        ]) ?? new JsonResponse($this->imageService->addImage($request));
     }
 }

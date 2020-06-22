@@ -19,7 +19,6 @@ class CreateImageTable extends Migration
             $table->string('title', 50);
             $table->string('image', 50);
             $table->dateTime('date');
-            $table->timestamps();
             $table->foreign('user_id')
                   ->references('id')
                   ->on('user')
