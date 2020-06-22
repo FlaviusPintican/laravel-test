@@ -2,24 +2,39 @@
 
 namespace App\Services;
 
+use App\Models\Comment;
+use App\Models\Image;
 use App\Models\User;
+use App\Repository\CommentRepository;
 use App\Repository\UserRepository;
+use http\Env\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use SebastianBergmann\CodeCoverage\TestFixture\C;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class UserService implements UserServiceInterface
 {
+    use Login;
+
     /**
      * @var UserRepository $userRepository
      */
     private UserRepository $userRepository;
 
     /**
-     * @param UserRepository $userRepository
+     * @var CommentRepository $commentRepository
      */
-    public function __construct(UserRepository $userRepository)
+    private CommentRepository $commentRepository;
+
+    /**
+     * @param UserRepository    $userRepository
+     * @param CommentRepository $commentRepository
+     */
+    public function __construct(UserRepository $userRepository, CommentRepository $commentRepository)
     {
         $this->userRepository = $userRepository;
+        $this->commentRepository = $commentRepository;
     }
 
     /**
@@ -39,6 +54,8 @@ class UserService implements UserServiceInterface
      */
     public function addUser(array $fields): User
     {
+        $this->check();
+
         return $this->userRepository->addUser(array_merge($fields, ['password' => Hash::make($fields['password'])]));
     }
 
@@ -47,6 +64,8 @@ class UserService implements UserServiceInterface
      */
     public function editUser(array $fields, int $id): User
     {
+        $this->check();
+
         $user = $this->getUser($id);
 
         $user->update($fields);
@@ -59,20 +78,34 @@ class UserService implements UserServiceInterface
      */
     public function deleteUser(int $id): bool
     {
+        $this->check();
+
         return $this->getUser($id)->delete();
     }
 
-    public function login()
+    /**
+     * {@inheritDoc}
+     */
+    public function addComment(array $fields): Comment
     {
+        $this->check();
 
+        if (Image::find($fields['image_id'])) {
+            throw new NotFoundHttpException('Image not found');
+        }
+
+        $fields['user_id'] = Auth::user()->id;
+
+        return $this->commentRepository->addComment($fields);
     }
+
     /**
      * @param int $id
      * @throws NotFoundHttpException
      *
      * @return User
      */
-    private function getUser(int $id): User
+    public function getUser(int $id): User
     {
         $user = $this->userRepository->getUser($id);
 

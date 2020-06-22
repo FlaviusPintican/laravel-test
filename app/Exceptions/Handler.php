@@ -23,7 +23,7 @@ class Handler extends ExceptionHandler
      *
      * @return JsonResponse
      */
-    public function render($request, Throwable $exception) : JsonResponse
+    public function render($request, Throwable $exception): JsonResponse
     {
         if ($exception instanceof ValidationException) {
             return $this->convertValidationExceptionToResponse($exception, $request);
@@ -37,7 +37,7 @@ class Handler extends ExceptionHandler
      *
      * @return JsonResponse
      */
-    private function renderHttpExceptions(Throwable $exception) : JsonResponse
+    private function renderHttpExceptions(Throwable $exception): JsonResponse
     {
         $response = [
             'code' => BadRequestHttpException::class

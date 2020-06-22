@@ -14,10 +14,10 @@ final class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             DB::table('user')->insert([
                'username' => Str::random(10),
-               'password' => Hash::make('password'),
+               'password' => Hash::make("password$i"),
                'api_token' => Str::random(60),
                'first_name' => Str::random(10),
                'family_name' => Str::random(10),

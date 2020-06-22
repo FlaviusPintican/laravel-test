@@ -38,6 +38,16 @@ class UserController extends Controller
     }
 
     /**
+     * @param int $id
+     *
+     * @return User
+     */
+    public function getUser(int $id): User
+    {
+        return $this->userService->getUser($id);
+    }
+
+    /**
      * @param Request $request
      *
      * @return JsonResponse
@@ -105,7 +115,7 @@ class UserController extends Controller
             throw new UnauthorizedHttpException('Unable to login');
         }
 
-        return new JsonResponse(['token' => Auth::user()->createToken('MyApp')->accessToken]);
+        return new JsonResponse(['token' => Auth::user()->createToken(User::class)->accessToken]);
     }
 
     /**
@@ -116,5 +126,18 @@ class UserController extends Controller
         Auth::logout();
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function addComment(Request $request): JsonResponse
+    {
+        return $this->errors($request, [
+            'image_id' => 'required|integer',
+            'body' => 'required|string|max:190',
+        ]) ?? new JsonResponse($this->userService->addComment($request->all()));
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Comment;
 use Exception;
 use App\Models\User;
+use http\Env\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 interface UserServiceInterface
@@ -38,4 +40,11 @@ interface UserServiceInterface
      * @return bool
      */
     public function deleteUser(int $id): bool;
+
+    /**
+     * @param array $fields
+     *
+     * @return Comment
+     */
+    public function addComment(array $fields): Comment;
 }
