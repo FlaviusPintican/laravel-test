@@ -2,15 +2,23 @@
 
 namespace App\Services;
 
+use App\Dto\Filters;
 use DateTime;
 use App\Models\Image;
 use App\Repository\ImageRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ImageService implements ImageServiceInterface
 {
+    /**
+     * @var string
+     */
+    private const DIRECTORY = 'images';
+
     /**
      * @var ImageRepository $imageRepository
      */
@@ -44,7 +52,10 @@ class ImageService implements ImageServiceInterface
     public function editImage(string $title, int $id): Image
     {
         $image = $this->getImage($id);
-        $image->update(['title' => $title]);
+
+        if (!$image->update(['title' => $title])) {
+            throw new BadRequestHttpException('Image was not updated');
+        }
 
         return $image;
     }
@@ -71,14 +82,76 @@ class ImageService implements ImageServiceInterface
         $image = $request->file('image');
         $userId = $request->user()->id;
         $fileName = time() . '.' . $image->getClientOriginalName();
-        Storage::disk('local')
-               ->put("images/$userId/" . $fileName, file_get_contents($image->getRealPath()), 'public');
 
-        return $this->imageRepository->addImage([
+        $isSaved = Storage::disk('local')
+           ->put(
+               sprintf(
+               '%s/%d/%s',
+               self::DIRECTORY, $userId, $fileName
+               ),
+               file_get_contents($image->getRealPath()),
+               'public'
+           );
+
+        if (!$isSaved) {
+            throw new BadRequestHttpException('Image was not saved');
+        }
+
+        $image = $this->imageRepository->addImage([
             'title' => $request->get('title'),
             'image' => $fileName,
             'user_id' => $userId,
             'date' => new DateTime(),
         ]);
+
+        if (!$image) {
+            Storage::disk('local')
+               ->delete(
+                   sprintf(
+                       '%s/%d/%s',
+                       self::DIRECTORY, $userId, $fileName
+                   )
+               );
+            throw new BadRequestHttpException('Image was not saved');
+        }
+
+        return $image;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function deleteImage(int $userId, int $id): void
+    {
+        $image = $this->getImage($id);
+        $name = $image->name;
+
+        DB::beginTransaction();
+
+        if (!$image->delete()) {
+            throw new BadRequestHttpException('Image can not be deleted');
+        }
+
+        $isDeleted = Storage::disk('local')
+           ->delete(
+               sprintf(
+                   '%s/%d/%s',
+                   self::DIRECTORY, $userId, $name
+               )
+           );
+
+        if (!$isDeleted) {
+            DB::rollBack();
+        }
+
+        DB::commit();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getImages(Request $request): array
+    {
+        return $this->imageRepository->getImages(new Filters($request));
     }
 }

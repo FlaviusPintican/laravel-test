@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Image as ImageResource;
 use App\Models\Image;
 use App\Services\ImageService;
 use App\Services\ImageServiceInterface;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class ImageController extends Controller
 {
@@ -65,5 +67,30 @@ class ImageController extends Controller
                 'title' => 'required|string|min:5',
                 'image' => 'required'
         ]) ?? new JsonResponse($this->imageService->addImage($request));
+    }
+
+    /**
+     * @param Request $request
+     * @param int $id
+     *
+     * @return JsonResponse
+     */
+    public function deleteImage(Request $request, int $id): JsonResponse
+    {
+        $this->imageService->deleteImage($request->user()->id, $id);
+
+        return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return array
+     */
+    public function getImages(Request $request): array
+    {
+        return array_map(
+            fn (Image $image): ImageResource => new ImageResource($image), $this->imageService->getImages($request)
+        );
     }
 }
