@@ -2,64 +2,55 @@
 
 namespace App\Exceptions;
 
+use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\ValidationException;
-use PDOException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
     /**
-     * Render an exception into an HTTP response.
+     * A list of the exception types that are not reported.
      *
-     * @param Request   $request
-     * @param Throwable $exception
-     * @throws Throwable
-     *
-     * @return JsonResponse
+     * @var array
      */
-    public function render($request, Throwable $exception): JsonResponse
-    {
-        if ($exception instanceof ValidationException) {
-            return $this->convertValidationExceptionToResponse($exception, $request);
-        }
+    protected $dontReport = [
+        //
+    ];
 
-        return $this->renderHttpExceptions($exception);
+    /**
+     * A list of the inputs that are never flashed for validation exceptions.
+     *
+     * @var array
+     */
+    protected $dontFlash = [
+        'password',
+        'password_confirmation',
+    ];
+
+    /**
+     * Report or log an exception.
+     *
+     * @param Throwable $exception
+     * @throws Exception
+     */
+    public function report(Throwable $exception)
+    {
+        parent::report($exception);
     }
 
     /**
-     * @param Throwable $exception
+     * Render an exception into an HTTP response.
      *
-     * @return JsonResponse
+     * @param Request $request
+     * @param Throwable $exception
+     * @throws Throwable
+     *
+     * @return Response
      */
-    private function renderHttpExceptions(Throwable $exception): JsonResponse
+    public function render($request, Throwable $exception)
     {
-        $response = [
-            'code' => BadRequestHttpException::class
-        ];
-
-        $status = method_exists($exception, 'getStatusCode') ?
-            $exception->getStatusCode() : Response::HTTP_BAD_REQUEST;
-
-        if (config('app.debug')) {
-            $response['exception'] = get_class($exception);
-            $response['message'] = $exception->getMessage();
-            $response['trace'] = $exception->getTrace();
-        }
-
-        if ($exception instanceof PDOException) {
-            $status = Response::HTTP_INTERNAL_SERVER_ERROR;
-        }
-
-        if ($exception instanceof HttpException) {
-            $response['code'] = get_class($exception);
-        }
-
-        return response()->json($response, $status);
+        return parent::render($request, $exception);
     }
 }

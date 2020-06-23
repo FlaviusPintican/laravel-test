@@ -11,3 +11,14 @@
 #### public -> index.php front controller of the app
 #### routes -> public and api routes(need authentication)
 #### tests -> perform unit tests for app
+
+#### Run commands
+`` php artisan route:clear
+   php artisan config:clear
+   php artisan cache:clear
+   php artisan migrate:refresh
+   php artisan db:seed
+   php artisan passport:install
+   php artisan db:seed
+   php artisan serve
+``

@@ -2,13 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Comment;
-use App\Models\Image;
 use App\Models\User;
-use App\Repository\CommentRepository;
 use App\Repository\UserRepository;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class UserService implements UserServiceInterface
@@ -19,18 +18,11 @@ class UserService implements UserServiceInterface
     private UserRepository $userRepository;
 
     /**
-     * @var CommentRepository $commentRepository
+     * @param UserRepository $userRepository
      */
-    private CommentRepository $commentRepository;
-
-    /**
-     * @param UserRepository    $userRepository
-     * @param CommentRepository $commentRepository
-     */
-    public function __construct(UserRepository $userRepository, CommentRepository $commentRepository)
+    public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
-        $this->commentRepository = $commentRepository;
     }
 
     /**
@@ -68,23 +60,22 @@ class UserService implements UserServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function deleteUser(int $id): bool
+    public function deleteUser(int $id): void
     {
-        return $this->getUser($id)->delete();
-    }
+        $user = $this->getUser($id);
+        DB::beginTransaction();
 
-    /**
-     * {@inheritDoc}
-     */
-    public function addComment(array $fields): Comment
-    {
-        if (Image::find($fields['image_id'])) {
-            throw new NotFoundHttpException('Image not found');
+        if (
+            ($user->comments()->count() > 0 && !$user->comments()->delete())
+            || ($user->images()->count() > 0 && !$user->images()->delete())
+            || !$user->delete()
+        ) {
+            DB::rollBack();
+            throw new BadRequestHttpException('User can not be deleted');
         }
 
-        $fields['user_id'] = Auth::user()->id;
-
-        return $this->commentRepository->addComment($fields);
+        $this->logout();
+        DB::commit();
     }
 
     /**
@@ -97,7 +88,7 @@ class UserService implements UserServiceInterface
     {
         $user = $this->userRepository->getUser($id);
 
-        if ( null === $user ) {
+        if (null === $user) {
             throw new NotFoundHttpException('Model not found');
         }
 
@@ -109,9 +100,10 @@ class UserService implements UserServiceInterface
      */
     public function logout(): void
     {
+
         $tokens = Auth::user()->tokens;
 
-        foreach($tokens as $token) {
+        foreach ($tokens as $token) {
             $token->revoke();
         }
     }

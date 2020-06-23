@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Comment;
 use App\Models\Image;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -57,4 +58,12 @@ interface ImageServiceInterface
      * @return Image[]
      */
     public function getImages(Request $request): array;
+
+    /**
+     * @param string $body
+     * @param int $imageId
+     *
+     * @return Comment
+     */
+    public function addComment(string $body, int $imageId): Comment;
 }

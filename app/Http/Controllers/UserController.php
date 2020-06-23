@@ -50,36 +50,46 @@ class UserController extends Controller
     /**
      * @param Request $request
      *
-     * @return JsonResponse
+     * @return User
      */
-    public function addUser(Request $request): JsonResponse
+    public function addUser(Request $request): User
     {
-        return $this->errors($request, [
-            'username' => 'required|unique:user,username|max:50',
-            'password' => 'required|string|max:100',
-            'first_name' => 'required|string|max:100',
-            'family_name' => 'required|string|max:50',
-            'email' => 'required|string|unique:user,email|max:50',
-            'phone_number' => 'required|string|unique:user,phone_number|max:50',
-        ]) ?? new JsonResponse($this->userService->addUser($request->all()));
+        $fields = $request->validate(
+            [
+                'username' => 'required|unique:user,username|max:50',
+                'password' => 'required|string|max:100',
+                'first_name' => 'required|string|max:100',
+                'family_name' => 'required|string|max:50',
+                'email' => 'required|string|unique:user,email|max:50',
+                'phone_number' => 'required|string|unique:user,phone_number|max:50',
+            ],
+            $request->all()
+        );
+
+        return $this->userService->addUser($fields);
     }
 
     /**
      * @param Request $request
      * @param int $id
      *
-     * @return JsonResponse
+     * @return User
      */
-    public function editUser(Request $request, int $id): JsonResponse
+    public function editUser(Request $request, int $id): User
     {
-        return $this->errors($request, [
-            'username' => 'sometimes|required|unique:user,username|max:50',
-            'password' => 'required|string|max:100',
-            'first_name' => 'required|string|max:100',
-            'family_name' => 'required|string|max:50',
-            'email' => 'sometimes|required|string|unique:user,email|max:50',
-            'phone_number' => 'sometimes|required|string|unique:user,phone_number|max:50',
-        ]) ?? new JsonResponse($this->userService->editUser($request->all(), $id));
+        $fields = $request->validate(
+            [
+                'username' => 'sometimes|required|unique:user,username|max:50',
+                'password' => 'required|string|max:100',
+                'first_name' => 'required|string|max:100',
+                'family_name' => 'required|string|max:50',
+                'email' => 'sometimes|required|string|unique:user,email|max:50',
+                'phone_number' => 'sometimes|required|string|unique:user,phone_number|max:50',
+            ],
+            $request->all()
+        );
+
+        return $this->userService->editUser($fields, $id);
     }
 
     /**
@@ -102,17 +112,13 @@ class UserController extends Controller
      */
     public function login(Request $request): JsonResponse
     {
-        $errors = $this->errors($request, [
+        $this->validate($request, [
             'email'    => 'required|email',
             'password' => 'required|alphaNum|min:4',
         ]);
 
-        if ($errors) {
-            return $errors;
-        }
-
         if (!Auth::attempt($request->all())) {
-            throw new UnauthorizedHttpException('Unable to login');
+            throw new UnauthorizedHttpException('', 'Invalid username or password');
         }
 
         return new JsonResponse(['token' => Auth::user()->createToken(User::class)->accessToken]);
@@ -126,18 +132,5 @@ class UserController extends Controller
         $this->userService->logout();
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
-    }
-
-    /**
-     * @param Request $request
-     *
-     * @return JsonResponse
-     */
-    public function addComment(Request $request): JsonResponse
-    {
-        return $this->errors($request, [
-            'image_id' => 'required|integer',
-            'body' => 'required|string|max:190',
-        ]) ?? new JsonResponse($this->userService->addComment($request->all()));
     }
 }

@@ -17,7 +17,7 @@ class Image extends JsonResource
     public function toArray($request)
     {
         return [
-            'name' => $this->name,
+            'name' => $this->title,
             'nr_comments' => $this->comments->count(),
             'average_rating' => 0,
         ];

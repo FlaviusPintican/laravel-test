@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\Image as ImageResource;
+use App\Models\Comment;
 use App\Models\Image;
 use App\Services\ImageService;
 use App\Services\ImageServiceInterface;
@@ -15,7 +16,7 @@ class ImageController extends Controller
     /**
      * @var ImageServiceInterface $imageService
      */
-    private ImageService $imageService;
+    private ImageServiceInterface $imageService;
 
     /**
      * @param ImageService $imageService
@@ -37,13 +38,18 @@ class ImageController extends Controller
      * @param Request $request
      * @param int $id
      *
-     * @return JsonResponse
+     * @return Image
      */
-    public function editImage(Request $request, int $id): JsonResponse
+    public function editImage(Request $request, int $id): Image
     {
-        return $this->errors($request, [
-            'title' => 'required|string|min:5',
-        ]) ?? new JsonResponse($this->imageService->editImage($request->get('title'), $id));
+        $request->validate(
+            [
+                'title' => 'required|string|min:5',
+            ],
+            $request->all()
+        );
+
+        return $this->imageService->editImage($request->get('title'), $id);
     }
 
     /**
@@ -59,14 +65,19 @@ class ImageController extends Controller
     /**
      * @param Request $request
      *
-     * @return JsonResponse
+     * @return Image
      */
-    public function addImage(Request $request): JsonResponse
+    public function addImage(Request $request): Image
     {
-        return $this->errors($request, [
+        $request->validate(
+            [
                 'title' => 'required|string|min:5',
                 'image' => 'required'
-        ]) ?? new JsonResponse($this->imageService->addImage($request));
+            ],
+            $request->all()
+        );
+
+        return $this->imageService->addImage($request);
     }
 
     /**
@@ -89,8 +100,26 @@ class ImageController extends Controller
      */
     public function getImages(Request $request): array
     {
+        $images = $this->imageService->getImages($request);
+
         return array_map(
-            fn (Image $image): ImageResource => new ImageResource($image), $this->imageService->getImages($request)
+            fn (Image $image): ImageResource => new ImageResource($image->load('comments')), $images
         );
+    }
+
+    /**
+     * @param Request $request
+     * @param int $imageId
+     *
+     * @return Comment
+     */
+    public function addComment(Request $request, int $imageId): Comment
+    {
+        $request->validate(
+            [
+                'body' => 'required|string|max:190',
+            ]
+        );
+        return $this->imageService->addComment($request->get('body'), $imageId);
     }
 }

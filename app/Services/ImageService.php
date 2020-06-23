@@ -3,10 +3,13 @@
 namespace App\Services;
 
 use App\Dto\Filters;
+use App\Models\Comment;
+use App\Repository\CommentRepository;
 use DateTime;
 use App\Models\Image;
 use App\Repository\ImageRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -25,11 +28,18 @@ class ImageService implements ImageServiceInterface
     private ImageRepository $imageRepository;
 
     /**
-     * @param ImageRepository $imageRepository
+     * @var CommentRepository
      */
-    public function __construct(ImageRepository $imageRepository)
+    private CommentRepository $commentRepository;
+
+    /**
+     * @param ImageRepository   $imageRepository
+     * @param CommentRepository $commentRepository
+     */
+    public function __construct(ImageRepository $imageRepository, CommentRepository $commentRepository)
     {
         $this->imageRepository = $imageRepository;
+        $this->commentRepository = $commentRepository;
     }
 
     /**
@@ -37,13 +47,13 @@ class ImageService implements ImageServiceInterface
      */
     public function getRandomImage(): Image
     {
-        $totalImages = $this->imageRepository->totalImage();
+        $imageIds = $this->imageRepository->getImageIds(30, 0);
 
-        if ($totalImages === 0) {
+        if (count($imageIds) === 0) {
             throw new NotFoundHttpException('No image found');
         }
 
-        return $this->imageRepository->getImage(rand(1, $totalImages));
+        return $this->getImage($imageIds[array_rand($imageIds)]);
     }
 
     /**
@@ -124,11 +134,11 @@ class ImageService implements ImageServiceInterface
     public function deleteImage(int $userId, int $id): void
     {
         $image = $this->getImage($id);
-        $name = $image->name;
+        $name = $image->image;
 
         DB::beginTransaction();
 
-        if (!$image->delete()) {
+        if (($image->comments()->count() > 0 && !$image->comments()->delete()) || !$image->delete()) {
             throw new BadRequestHttpException('Image can not be deleted');
         }
 
@@ -142,6 +152,13 @@ class ImageService implements ImageServiceInterface
 
         if (!$isDeleted) {
             DB::rollBack();
+            throw new BadRequestHttpException('Image can not be deleted');
+        }
+
+        $directory = sprintf('%s/%d', self::DIRECTORY, $userId);
+
+        if (count(Storage::files($directory)) === 0) {
+            Storage::deleteDirectory($directory);
         }
 
         DB::commit();
@@ -154,4 +171,21 @@ class ImageService implements ImageServiceInterface
     {
         return $this->imageRepository->getImages(new Filters($request));
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addComment(string $body, int $imageId): Comment
+    {
+        if (!Image::find($imageId)) {
+            throw new NotFoundHttpException('Image not found');
+        }
+
+        return $this->commentRepository->addComment([
+            'image_id' => $imageId,
+            'body' => $body,
+            'user_id' => Auth::user()->id,
+        ]);
+    }
+
 }

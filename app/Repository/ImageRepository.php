@@ -7,12 +7,16 @@ use App\Models\Image;
 
 class ImageRepository
 {
+
     /**
-     * @return int
+     * @param int $limit
+     * @param int $offset
+     *
+     * @return int[]
      */
-    public function totalImage(): int
+    public function getImageIds(int $limit, int $offset): array
     {
-        return Image::count();
+        return Image::take($limit)->skip($offset)->pluck('id')->all();
     }
 
     /**
@@ -43,18 +47,18 @@ class ImageRepository
     public function getImages(Filters $filters): array
     {
         $query = Image::query()
-                      ->select()
+                      ->select('image.*')
                       ->join('user', 'user.id', '=', 'image.user_id');
 
-        if (null !== $filters['user_id']) {
+        if (null !== $filters->getUserId()) {
             $query->where('image.user_id' , '=', $filters->getUserId());
         }
 
-        if (null !== $filters['title']) {
+        if (strlen($filters->getTitle()) > 0) {
             $query->where('image.title', $filters->getTitle());
         }
 
-        if (null !== $filters['uploader_name']) {
+        if (strlen($filters->getUploaderName()) > 0) {
             $query->where('user.username', $filters->getUploaderName())
                 ->orWhere('user.first_name', $filters->getUploaderName())
                 ->orWhere('user.family_name', $filters->getUploaderName());
@@ -63,6 +67,7 @@ class ImageRepository
         return $query->orderBy('date', $filters->getDirection())
             ->offset($filters->getOffset())
             ->limit($filters->getLimit())
+            ->with('comments')
             ->get()
             ->all();
     }

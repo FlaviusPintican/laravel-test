@@ -18,7 +18,6 @@ final class UserSeeder extends Seeder
             DB::table('user')->insert([
                'username' => Str::random(10),
                'password' => Hash::make("password$i"),
-               'api_token' => Str::random(60),
                'first_name' => Str::random(10),
                'family_name' => Str::random(10),
                'email' => Str::random(10).'@gmail.com',

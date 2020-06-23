@@ -12,9 +12,9 @@ Route::group(['middleware' => 'auth:api'], function() {
     Route::post('/users', 'UserController@addUser');
     Route::put('/users/{user_id}', 'UserController@editUser');
     Route::delete('/users/{user_id}', 'UserController@deleteUser');
-    Route::delete('/users/comments', 'UserController@addComment');
+    Route::post('/images/{image_id}/comments', 'ImageController@addComment');
     Route::put('/images/{image_id}', 'ImageController@editImage');
-    Route::delete('/images', 'ImageController@deleteImage');
+    Route::delete('/images/{image_id}', 'ImageController@deleteImage');
     Route::post('/images', 'ImageController@addImage');
     Route::post('/logout', 'UserController@logout');
 });
