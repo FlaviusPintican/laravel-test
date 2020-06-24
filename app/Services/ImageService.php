@@ -115,13 +115,8 @@ class ImageService implements ImageServiceInterface
         ]);
 
         if (!$image) {
-            Storage::disk('local')
-               ->delete(
-                   sprintf(
-                       '%s/%d/%s',
-                       self::DIRECTORY, $userId, $fileName
-                   )
-               );
+            $this->deleteFile($userId, $fileName);
+            $this->deleteEmptyDirectory($userId);
             throw new BadRequestHttpException('Image was not saved');
         }
 
@@ -142,24 +137,14 @@ class ImageService implements ImageServiceInterface
             throw new BadRequestHttpException('Image can not be deleted');
         }
 
-        $isDeleted = Storage::disk('local')
-           ->delete(
-               sprintf(
-                   '%s/%d/%s',
-                   self::DIRECTORY, $userId, $name
-               )
-           );
+        $isDeleted = $this->deleteFile($userId, $name);
 
         if (!$isDeleted) {
             DB::rollBack();
             throw new BadRequestHttpException('Image can not be deleted');
         }
 
-        $directory = sprintf('%s/%d', self::DIRECTORY, $userId);
-
-        if (count(Storage::files($directory)) === 0) {
-            Storage::deleteDirectory($directory);
-        }
+        $this->deleteEmptyDirectory($userId);
 
         DB::commit();
     }
@@ -188,4 +173,35 @@ class ImageService implements ImageServiceInterface
         ]);
     }
 
+    /**
+     * @param int $userId
+     *
+     * @return void
+     */
+    private function deleteEmptyDirectory(int $userId) : void
+    {
+        $directory = sprintf('%s/%d', self::DIRECTORY, $userId);
+
+        if (count(Storage::files($directory)) === 0) {
+            Storage::deleteDirectory($directory);
+        }
+    }
+
+    /**
+     * @param int $userId
+     * @param string $name
+     *
+     * @return bool
+     */
+    private function deleteFile(int $userId, string $name): bool
+    {
+        return Storage::disk('local')
+            ->delete(
+                sprintf(
+                    '%s/%d/%s',
+                    self::DIRECTORY, $userId, $name
+                )
+            );
+
+    }
 }

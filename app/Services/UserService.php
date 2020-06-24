@@ -100,7 +100,6 @@ class UserService implements UserServiceInterface
      */
     public function logout(): void
     {
-
         $tokens = Auth::user()->tokens;
 
         foreach ($tokens as $token) {

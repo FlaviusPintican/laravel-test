@@ -13,6 +13,7 @@
 #### tests -> perform unit tests for app
 
 #### Run commands
+`` php artisan config:cache --env=dev`` \
 `` php artisan route:clear`` \
 `` php artisan config:clear`` \
 `` php artisan cache:clear`` \
@@ -20,4 +21,9 @@
 `` php artisan db:seed`` \
 `` php artisan passport:install`` \
 `` php artisan db:seed`` \
-`` php artisan serve``
+`` php artisan serve`` \
+`` php artisan make:factory``
+
+#### Create testing environment
+
+``php artisan config:cache --env=testing`` 

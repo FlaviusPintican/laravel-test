@@ -51,20 +51,21 @@ class ImageRepository
                       ->join('user', 'user.id', '=', 'image.user_id');
 
         if (null !== $filters->getUserId()) {
-            $query->where('image.user_id' , '=', $filters->getUserId());
+            $query->where('image.user_id', $filters->getUserId());
         }
 
         if (strlen($filters->getTitle()) > 0) {
-            $query->where('image.title', $filters->getTitle());
+            $query->where('image.title', 'LIKE',  '%' . $filters->getTitle() . '%');
         }
 
         if (strlen($filters->getUploaderName()) > 0) {
-            $query->where('user.username', $filters->getUploaderName())
-                ->orWhere('user.first_name', $filters->getUploaderName())
-                ->orWhere('user.family_name', $filters->getUploaderName());
+            $query->where('user.username', 'LIKE', '%' . $filters->getUploaderName() . '%')
+                ->orWhere('user.first_name', 'LIKE', '%' . $filters->getUploaderName() . '%')
+                ->orWhere('user.family_name', 'LIKE', '%' . $filters->getUploaderName() . '%');
         }
 
-        return $query->orderBy('date', $filters->getDirection())
+        return $query->orderBy('image.title', $filters->getDirection())
+            ->orderBy('user.first_name', $filters->getDirection())
             ->offset($filters->getOffset())
             ->limit($filters->getLimit())
             ->with('comments')
