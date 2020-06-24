@@ -20,10 +20,10 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function it_returns_empty_users_list(): void
+    public function itReturnsEmptyUsersList(): void
     {
         $response = $this->get('/api/users');
-        $response->json();
+        static::assertEmpty($response->json());
         $response->assertOk();
     }
 
@@ -32,7 +32,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function it_returns_users_list(): void
+    public function itReturnsUsersList(): void
     {
         $user = factory(User::class)->create(['username' => 'test']);
         $response = $this->get('/api/users');
@@ -51,7 +51,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function it_returns_login_failed(array $data): void
+    public function itReturnsLoginFailed(array $data): void
     {
         factory(User::class)->create([]);
         $response = $this->post(
@@ -73,7 +73,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function it_returns_token_after_login(array $data): void
+    public function itReturnsTokenAfterLogin(array $data): void
     {
         Auth::shouldReceive('attempt')->once()->with($data)->andReturn(true);
 
@@ -114,7 +114,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function it_failed_to_create_new_user(): void
+    public function itFailedToCreateNewUser(): void
     {
         Passport::actingAs(factory(User::class)->create());
         $response = $this->post(
@@ -134,7 +134,7 @@ class UserControllerTest extends TestCase
      *
      * @return void
      */
-    public function it_creates_a_new_user(): void
+    public function itCreatesANewUser(): void
     {
         Passport::actingAs(factory(User::class)->create());
         $response = $this->post(
