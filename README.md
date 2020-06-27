@@ -10,7 +10,9 @@
 #### database -> migration, seeds, factories for unit tests
 #### public -> index.php front controller of the app
 #### routes -> public and api routes(need authentication)
-#### tests -> perform unit tests for app
+#### tests -> perform integration tests for app
+
+#### This is a MVC project structure
 
 #### Run commands
 `` php artisan config:cache --env=dev`` \
@@ -27,3 +29,6 @@
 #### Create testing environment
 
 ``php artisan config:cache --env=testing`` 
+
+#### Goals of the project
+#### Create crud user, crud images for a specific user and the possibility to add comments to a image
